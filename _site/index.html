@@ -60,10 +60,15 @@ body {
 			game.load.bitmapFont('font', '/assets/spacefont/font.png', '/assets/spacefont/font.xml');
 			game.load.image('enemy-blue', '/assets/enemies/enemy3.png');
 			game.load.image('blueEnemyBullet', '/assets/bullets/blue-enemy-bullet.png');
+			game.load.audio('music','assets/music.mp3');
 
 		}
 
 		function create() {
+
+			music = game.add.audio('music');
+			music.play();
+			music.volume = 0.5;
 			
 			game.scale.pageAlignHorizontally = true;
 			
