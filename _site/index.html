@@ -36,6 +36,7 @@ body {
 		var bullets;
 		var fireButton;
 		var bulletTimer = 0;
+		var gameOver;
 
 		var ACCLERATION = 600;
 		var DRAG = 400;
@@ -76,6 +77,7 @@ body {
 
 			//  The hero!
 			player = game.add.sprite(100, game.height / 2, 'ship');
+			player.health = 100;
 			player.anchor.setTo(0.5, 0.5);
 			game.physics.enable(player, Phaser.Physics.ARCADE);
 			player.body.maxVelocity.setTo(MAXSPEED, MAXSPEED);
@@ -83,6 +85,7 @@ body {
 			player.events.onKilled.add(function(){
 				shipTrail.kill();
 			});
+			
 			player.events.onRevived.add(function(){
 				shipTrail.start(false, 5000, 10);
 			});
@@ -111,6 +114,12 @@ body {
 		    });
 			game.time.events.add(1000, launchGreenEnemy);
 
+			//  Game over text
+		    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'font', 'GAME OVER!', 110);
+			gameOver.x = gameOver.x - gameOver.textWidth / 2;
+	    	gameOver.y = gameOver.y - gameOver.textHeight / 3;
+		    gameOver.visible = false;
+
 			//  Add an emitter for the ship's trail
 			shipTrail = game.add.emitter(player.x - 20, player.y, 400);
 			shipTrail.height = 10;
@@ -134,8 +143,15 @@ body {
 		        explosion.animations.add('explosion');
 			});
 
+			//  Shields stat
+			shields = game.add.bitmapText(game.world.width - 300, 10, 'font', '' + player.health +'%', 40);
+			shields.render = function () {
+			shields.text = 'Shields: ' + Math.max(player.health, 0) +'%';
+			};
+			shields.render();
+
 			//  Score
-			scoreText = game.add.bitmapText(10, 10, 'font', '', 50);
+			scoreText = game.add.bitmapText(10, 10, 'font', '', 40);
 		    scoreText.render = function () {
 		        scoreText.text = 'Score: ' + score;
 		    };
@@ -194,6 +210,26 @@ body {
 			game.physics.arcade.overlap(player, greenEnemies, shipCollide, null, this);
 			game.physics.arcade.overlap(greenEnemies, bullets, hitEnemy, null, this);
 
+			 //  Game over?
+			 if (! player.alive && gameOver.visible === false) {
+				gameOver.visible = true;
+				gameOver.alpha = 0;
+				var fadeInGameOver = game.add.tween(gameOver);
+				fadeInGameOver.to({alpha: 1}, 1000, Phaser.Easing.Quintic.Out);
+				fadeInGameOver.onComplete.add(setResetHandlers);
+				fadeInGameOver.start();
+				function setResetHandlers() {
+					//  The "click to restart" handler
+					tapRestart = game.input.onTap.addOnce(_restart,this);
+					spaceRestart = fireButton.onDown.addOnce(_restart,this);
+					function _restart() {
+					tapRestart.detach();
+					spaceRestart.detach();
+					restart();
+					}
+				}
+			}
+
 
 		}
 
@@ -240,8 +276,8 @@ body {
 				audio.play()
 				audio.volume = 0.2
 			
-			// player.damage(enemy.damageAmount);
-			// shields.render();		
+			player.damage(enemy.damageAmount);
+			shields.render();		
 		}
 
 		function launchGreenEnemy() {
@@ -309,6 +345,30 @@ body {
 			enemy.trail = enemyTrail;
 		}
 
+		function restart () {
+		//  Reset the enemies
+			greenEnemies.callAll('kill');
+			game.time.events.remove(greenEnemyLaunchTimer);
+			game.time.events.add(1000, launchGreenEnemy);
+			// blueEnemies.callAll('kill');
+			// game.time.events.remove(blueEnemyLaunchTimer);
+			
+			// blueEnemies.callAll('kill');
+			// game.time.events.remove(blueEnemyLaunchTimer);
+			// blueEnemyBullets.callAll('kill');
+
+			//  Revive the player
+			player.revive();
+			player.health = 100;
+			shields.render();
+			score = 0;
+			scoreText.render();
+			//  Hide the text
+			gameOver.visible = false;
+			//  Reset pacing
+			greenEnemySpacing = 1000;
+			// blueEnemyLaunched = false;
+		}
 
 	</script>
 </body>
