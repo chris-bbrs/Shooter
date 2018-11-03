@@ -30,6 +30,8 @@ body {
 		var cursors;
 		var bank;
 		var explosions;
+		var score = 0;
+		var scoreText;
 		var shipTrail;
 		var bullets;
 		var fireButton;
@@ -43,14 +45,15 @@ body {
 
 			//  We need this because the assets are on github pages
 			//  Remove the next 2 lines if running locally
-			game.load.baseURL = 'https://cnobody.github.io/Shooter/';
-			game.load.crossOrigin = 'anonymous';
+			// game.load.baseURL = 'https://cnobody.github.io/Shooter/';
+			// game.load.crossOrigin = 'anonymous';
 			
 			game.load.image('starfield', 'assets/starfield.png');
 			game.load.image('ship', 'assets/ship.png');
 			game.load.image('bullet', 'assets/bullets/bullet.png');
 			game.load.image('enemy-green', 'assets/enemies/enemy2.png');
 			game.load.spritesheet('explosion', '/assets/explode.png', 128, 128);
+			game.load.bitmapFont('font', '/assets/spacefont/font.png', '/assets/spacefont/font.xml');
 
 		}
 
@@ -131,6 +134,13 @@ body {
 		        explosion.animations.add('explosion');
 			});
 
+			//  Score
+			scoreText = game.add.bitmapText(10, 10, 'font', '', 50);
+		    scoreText.render = function () {
+		        scoreText.text = 'Score: ' + score;
+		    };
+		    scoreText.render();
+
 
 		}
 
@@ -203,13 +213,13 @@ body {
 				audio.play()
 				audio.volume = 0.2
 		
-			// // Increase score
-			// score += enemy.damageAmount * 10;
-			// scoreText.render();	
+			// Increase score
+			score += enemy.damageAmount * 10;
+			scoreText.render();	
 				
-			// //  Pacing
-			// //  Enemies come quicker as score increases
-			// greenEnemySpacing *= 0.9;
+			//  Pacing
+			//  Enemies come quicker as score increases
+			greenEnemySpacing *= 0.9;
 			// //  Blue enemies come in after a score of 1000
 			// if (!blueEnemyLaunched && score > 1000) {
 			// blueEnemyLaunched = true;
@@ -230,8 +240,8 @@ body {
 				audio.play()
 				audio.volume = 0.2
 			
-			player.damage(enemy.damageAmount);
-			shields.render();		
+			// player.damage(enemy.damageAmount);
+			// shields.render();		
 		}
 
 		function launchGreenEnemy() {
