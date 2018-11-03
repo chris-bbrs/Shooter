@@ -37,6 +37,9 @@ body {
 		var fireButton;
 		var bulletTimer = 0;
 		var gameOver;
+		var blueEnemyLaunchTimer;
+		var blueEnemyLaunched = false;
+		var blueEnemies;
 
 		var ACCLERATION = 600;
 		var DRAG = 400;
@@ -55,6 +58,8 @@ body {
 			game.load.image('enemy-green', 'assets/enemies/enemy2.png');
 			game.load.spritesheet('explosion', '/assets/explode.png', 128, 128);
 			game.load.bitmapFont('font', '/assets/spacefont/font.png', '/assets/spacefont/font.xml');
+			game.load.image('enemy-blue', '/assets/enemies/enemy3.png');
+			game.load.image('blueEnemyBullet', '/assets/bullets/blue-enemy-bullet.png');
 
 		}
 
@@ -113,6 +118,35 @@ body {
 				});
 		    });
 			game.time.events.add(1000, launchGreenEnemy);
+
+			 //  Blue enemy's bullets
+			 blueEnemyBullets = game.add.group();
+			blueEnemyBullets.enableBody = true;
+			blueEnemyBullets.physicsBodyType = Phaser.Physics.ARCADE;
+			blueEnemyBullets.createMultiple(30, 'blueEnemyBullet');
+			blueEnemyBullets.callAll('crop', null, {x: 90, y: 0, width: 90, height: 40});
+			blueEnemyBullets.setAll('alpha', 0.9);
+			blueEnemyBullets.setAll('anchor.x', 0.5);
+			blueEnemyBullets.setAll('anchor.y', 0.5);
+			blueEnemyBullets.setAll('outOfBoundsKill', true);
+			blueEnemyBullets.setAll('checkWorldBounds', true);
+			blueEnemyBullets.forEach(function(enemy){
+				enemy.body.setSize(20, 20);
+    		});
+				
+				//Blue Baddies!
+			blueEnemies = game.add.group();
+		    blueEnemies.enableBody = true;
+		    blueEnemies.physicsBodyType = Phaser.Physics.ARCADE;
+		    blueEnemies.createMultiple(30, 'enemy-blue');
+		    blueEnemies.setAll('anchor.x', 0.5);
+		    blueEnemies.setAll('anchor.y', 0.5);
+		    blueEnemies.setAll('scale.x', 0.5);
+		    blueEnemies.setAll('scale.y', 0.5);
+		    blueEnemies.setAll('angle', 180);
+		    blueEnemies.forEach(function(enemy){
+		        enemy.damageAmount = 40;
+		    });
 
 			//  Game over text
 		    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'font', 'GAME OVER!', 110);
@@ -210,6 +244,11 @@ body {
 			game.physics.arcade.overlap(player, greenEnemies, shipCollide, null, this);
 			game.physics.arcade.overlap(greenEnemies, bullets, hitEnemy, null, this);
 
+			game.physics.arcade.overlap(player, blueEnemies, shipCollide, null, this);
+			game.physics.arcade.overlap( blueEnemies,bullets , hitEnemy, null, this);
+			
+			game.physics.arcade.overlap(blueEnemyBullets, player, enemyHitsPlayer, null, this);
+
 			 //  Game over?
 			 if (! player.alive && gameOver.visible === false) {
 				gameOver.visible = true;
@@ -257,12 +296,12 @@ body {
 			//  Enemies come quicker as score increases
 			greenEnemySpacing *= 0.9;
 			// //  Blue enemies come in after a score of 1000
-			// if (!blueEnemyLaunched && score > 1000) {
-			// blueEnemyLaunched = true;
-			// launchBlueEnemy();
+			if (!blueEnemyLaunched && score > 1000) {
+			blueEnemyLaunched = true;
+			launchBlueEnemy();
 			// //  Slow green enemies down now that there are other enemies
-			// greenEnemySpacing *= 2;
-			// }
+			greenEnemySpacing *= 2;
+			}
 		}
 
 		function shipCollide(player, enemy) {
@@ -334,6 +373,61 @@ body {
 			}
 		}
 
+		function launchBlueEnemy() {
+			var startingY = (game.rnd.integerInRange(100, game.height - 100));
+			var HorizontalSpeed = -180;
+			var spread = 60;
+			var frequency = 70;
+			var HorizontalSpacing = 70;
+			var numEnemiesInWave = 5;
+			var timeBetweenWaves = 2500;
+			//  Launch wave
+			for (var i =0; i < numEnemiesInWave; i++) {
+				var enemy = blueEnemies.getFirstExists(false);
+				if (enemy) {
+					enemy.startingY = startingY;
+					//enemy.reset(game.width + HorizontalSpacing * i, game.rnd.integerInRange(10, game.height -20));
+					enemy.reset(800 + (HorizontalSpacing * i), game.height / 2);
+					enemy.body.velocity.x = HorizontalSpeed;
+					 //  Set up firing
+					var bulletSpeed = 400;
+					var firingDelay = 2000;
+					enemy.bullets = 2;
+					enemy.lastShot = 0;
+					//  Update function for each enemy
+					enemy.update = function(){
+					//  Wave movement
+					this.body.y = this.startingY + Math.sin((this.x) / frequency) * spread;
+					//  Squish and rotate ship for illusion of "banking"
+					bank = Math.cos((this.x + 60) / frequency)
+					this.scale.y = 0.5 - Math.abs(bank) / 8;
+					this.angle = 180 - bank * 2;
+					//  Fire
+					enemyBullet = blueEnemyBullets.getFirstExists(false);
+					if (enemyBullet &&
+						this.alive &&
+						this.bullets &&
+						this.y > game.width / 8 &&
+						game.time.now > firingDelay + this.lastShot) {
+							this.lastShot = game.time.now;
+							this.bullets--;
+							enemyBullet.reset(this.x, this.y + this.height / 2);
+							enemyBullet.damageAmount = this.damageAmount;
+							var angle = game.physics.arcade.moveToObject(enemyBullet, player, bulletSpeed);
+							enemyBullet.angle = game.math.radToDeg(angle);
+						}
+					//  Kill enemies once they go off screen
+					if (this.x > game.width + 400) {
+						this.kill();
+						this.x = -20
+					}
+					};
+				}
+			}
+			//  Send another wave soon
+			blueEnemyLaunchTimer = game.time.events.add(game.rnd.integerInRange(timeBetweenWaves, timeBetweenWaves + 4000), launchBlueEnemy);
+		}
+
 		function addEnemyEmitterTrail(enemy) {
 			var enemyTrail = game.add.emitter(enemy.x, player.y - 10, 100);
 			enemyTrail.width = 10;
@@ -345,17 +439,27 @@ body {
 			enemy.trail = enemyTrail;
 		}
 
+		function enemyHitsPlayer (player, bullet) {
+			var explosion = explosions.getFirstExists(false);
+			explosion.reset(player.body.x + player.body.halfWidth, player.body.y + player.body.halfHeight);
+			explosion.alpha = 0.7;
+			explosion.play('explosion', 30, false, true);
+			bullet.kill();
+			player.damage(bullet.damageAmount);
+			shields.render()
+		}
+
 		function restart () {
 		//  Reset the enemies
 			greenEnemies.callAll('kill');
 			game.time.events.remove(greenEnemyLaunchTimer);
 			game.time.events.add(1000, launchGreenEnemy);
-			// blueEnemies.callAll('kill');
-			// game.time.events.remove(blueEnemyLaunchTimer);
+			blueEnemies.callAll('kill');
+			game.time.events.remove(blueEnemyLaunchTimer);
 			
-			// blueEnemies.callAll('kill');
-			// game.time.events.remove(blueEnemyLaunchTimer);
-			// blueEnemyBullets.callAll('kill');
+			blueEnemies.callAll('kill');
+			game.time.events.remove(blueEnemyLaunchTimer);
+			blueEnemyBullets.callAll('kill');
 
 			//  Revive the player
 			player.revive();
@@ -367,7 +471,7 @@ body {
 			gameOver.visible = false;
 			//  Reset pacing
 			greenEnemySpacing = 1000;
-			// blueEnemyLaunched = false;
+			blueEnemyLaunched = false;
 		}
 
 	</script>
