@@ -40,17 +40,19 @@ body {
 		var blueEnemyLaunchTimer;
 		var blueEnemyLaunched = false;
 		var blueEnemies;
+		var upgrade;
 
 		var ACCLERATION = 600;
 		var DRAG = 400;
 		var MAXSPEED = 400;
+		var ENEMY_SPEED = 300;
 
 		function preload() {
 
 			//  We need this because the assets are on github pages
 			//  Remove the next 2 lines if running locally
-			game.load.baseURL = 'https://cnobody.github.io/Shooter/';
-			game.load.crossOrigin = 'anonymous';
+			// game.load.baseURL = 'https://cnobody.github.io/Shooter/';
+			// game.load.crossOrigin = 'anonymous';
 			
 			game.load.image('starfield', 'assets/starfield.png');
 			game.load.image('ship', 'assets/ship.png');
@@ -60,6 +62,8 @@ body {
 			game.load.bitmapFont('font', '/assets/spacefont/font.png', '/assets/spacefont/font.xml');
 			game.load.image('enemy-blue', '/assets/enemies/enemy3.png');
 			game.load.image('blueEnemyBullet', '/assets/bullets/blue-enemy-bullet.png');
+			game.load.image('upgrade','./assets/upgrade.png');
+			
 			game.load.audio('music','assets/music.mp3');
 
 		}
@@ -68,7 +72,7 @@ body {
 
 			music = game.add.audio('music');
 			music.play();
-			music.volume = 0.5;
+			music.volume = 1;
 			
 			game.scale.pageAlignHorizontally = true;
 			
@@ -88,6 +92,7 @@ body {
 			//  The hero!
 			player = game.add.sprite(100, game.height / 2, 'ship');
 			player.health = 100;
+			player.weaponLevel = 1
 			player.anchor.setTo(0.5, 0.5);
 			game.physics.enable(player, Phaser.Physics.ARCADE);
 			player.body.maxVelocity.setTo(MAXSPEED, MAXSPEED);
@@ -152,6 +157,12 @@ body {
 		    blueEnemies.forEach(function(enemy){
 		        enemy.damageAmount = 40;
 		    });
+
+			//Upgrade Icon
+			upgrade = game.add.group();
+			upgrade.enableBody = true;
+			upgrade.physicsBodyType = Phaser.Physics.ARCADE;
+			upgrade.createMultiple(10,'upgrade');
 
 			//  Game over text
 		    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'font', 'GAME OVER!', 110);
@@ -251,8 +262,9 @@ body {
 
 			game.physics.arcade.overlap(player, blueEnemies, shipCollide, null, this);
 			game.physics.arcade.overlap( blueEnemies,bullets , hitEnemy, null, this);
-			
 			game.physics.arcade.overlap(blueEnemyBullets, player, enemyHitsPlayer, null, this);
+
+			game.physics.arcade.overlap(player, upgrade, playerhitsupgrade, null, this);
 
 			 //  Game over?
 			 if (! player.alive && gameOver.visible === false) {
@@ -291,19 +303,25 @@ body {
 			bullet.kill()
 			var audio = new Audio('assets/explosion.wav');
 				audio.play()
-				audio.volume = 0.2
+				audio.volume = 0.1
 		
 			// Increase score
 			score += enemy.damageAmount * 10;
 			scoreText.render();	
+
+			if (score >= 400) {
+				launchUpgrade()
+			}
 				
 			//  Pacing
 			//  Enemies come quicker as score increases
 			greenEnemySpacing *= 0.9;
+
 			// //  Blue enemies come in after a score of 1000
 			if (!blueEnemyLaunched && score > 1000) {
 			blueEnemyLaunched = true;
 			launchBlueEnemy();
+
 			// //  Slow green enemies down now that there are other enemies
 			greenEnemySpacing *= 2;
 			}
@@ -374,8 +392,62 @@ body {
 					bulletTimer = game.time.now + BULLET_SPACING;
 					var audio = new Audio('assets/shoot.wav');
             		audio.play()
+					audio.volume=0.1
+				}
+			}
+		}
+
+		function fireBullet() {
+			switch (player.weaponLevel) {
+				case 1:
+	    	    //  To avoid them being allowed to fire too fast we set a time limit
+	    	    if (game.time.now > bulletTimer){
+				var BULLET_SPEED = 400;
+				var BULLET_SPACING = 250;
+				//  Grab the first bullet we can from the pool
+				var bullet = bullets.getFirstExists(false);
+				if (bullet)
+				{
+					//  And fire it
+					//  Make bullet come out of tip of ship with right angle
+					var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
+					bullet.reset(player.x + bulletOffset, player.y);
+					bullet.angle = player.angle;
+					game.physics.arcade.velocityFromAngle(bullet.angle, BULLET_SPEED, bullet.body.velocity);
+					bullet.body.velocity.y += player.body.velocity.y;
+					bulletTimer = game.time.now + BULLET_SPACING;
+					var audio = new Audio('assets/shoot.wav');
+            		audio.play()
 					audio.volume=0.2
 				}
+			}
+			break;
+			case 2:
+				if (game.time.now > bulletTimer) {
+				var BULLET_SPEED = 400;
+				var BULLET_SPACING = 550;
+				for (var i = 0; i < 3; i++) {
+					var bullet = bullets.getFirstExists(false);
+					if (bullet) {
+						//  Make bullet come out of tip of ship with right angle
+						var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
+						bullet.reset(player.x + bulletOffset, player.y);
+						//  "Spread" angle of 1st and 3rd bullets
+						var spreadAngle;
+						if (i === 0) spreadAngle = -20;
+						if (i === 1) spreadAngle = 0;
+						if (i === 2) spreadAngle = 20;
+						bullet.angle = player.angle + spreadAngle;
+						game.physics.arcade.velocityFromAngle(spreadAngle , BULLET_SPEED, bullet.body.velocity);
+						//bullet.body.velocity.x += player.body.velocity.x;
+					}
+					bulletTimer = game.time.now + BULLET_SPACING;
+				}
+						var audio = new Audio('assets/shoot.wav');
+            			audio.play()
+						audio.volume=0.2		
+				}
+			break;
 			}
 		}
 
@@ -434,6 +506,28 @@ body {
 			blueEnemyLaunchTimer = game.time.events.add(game.rnd.integerInRange(timeBetweenWaves, timeBetweenWaves + 4000), launchBlueEnemy);
 		}
 
+		function launchUpgrade() {
+			var upgrades = upgrade.getFirstExists(false);
+			if (upgrades) {
+				upgrades.reset(game.width, game.rnd.integerInRange(100, game.height-100));
+				upgrades.body.velocity.x = -ENEMY_SPEED;
+				upgrades.body.velocity.y = 0
+				upgrades.body.drag.y = 100;
+				if (upgrades.y > game.height ) {
+					upgrades.kill();
+				}
+			}
+		}
+
+		function playerhitsupgrade (player, upgrade){
+			upgrade.kill()
+			if (player.weaponLevel < 2) {
+			player.weaponLevel = 2;
+			}
+			//game.add.audio('healthAudio',0.5).play();
+			//console.log("GOT healthUp")
+		}
+
 		function addEnemyEmitterTrail(enemy) {
 			var enemyTrail = game.add.emitter(enemy.x, player.y - 10, 100);
 			enemyTrail.width = 10;
@@ -460,6 +554,7 @@ body {
 			greenEnemies.callAll('kill');
 			game.time.events.remove(greenEnemyLaunchTimer);
 			game.time.events.add(1000, launchGreenEnemy);
+			
 			blueEnemies.callAll('kill');
 			game.time.events.remove(blueEnemyLaunchTimer);
 			
@@ -467,14 +562,21 @@ body {
 			game.time.events.remove(blueEnemyLaunchTimer);
 			blueEnemyBullets.callAll('kill');
 
+			game.time.events.add(1000, launchUpgrade);
+			upgrade.callAll('kill');
+			game.time.events.remove(upgrade);
+
 			//  Revive the player
 			player.revive();
 			player.health = 100;
 			shields.render();
 			score = 0;
 			scoreText.render();
+			player.weaponLevel = 1;
+
 			//  Hide the text
 			gameOver.visible = false;
+
 			//  Reset pacing
 			greenEnemySpacing = 1000;
 			blueEnemyLaunched = false;
