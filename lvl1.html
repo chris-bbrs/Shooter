@@ -608,6 +608,7 @@ body {
 							bullet.reset(player.x + bulletOffset, player.y);
 							//  "Spread" angle of 1st and 3rd bullets
 							var spreadAngle;
+							var blt_speed;
 							if (i === 0) spreadAngle = -5;
 							if (i === 1) spreadAngle = 0;
 							if (i === 2) spreadAngle = 5;
@@ -626,7 +627,7 @@ body {
 				if (game.time.now > bulletTimer) {
 				var BULLET_SPEED = 400;
 				var BULLET_SPACING = 500;
-				for (var i = 0; i < 7; i++) {
+				for (var i = 0; i < 5; i++) {
 					var bullet = bullets.getFirstExists(false);
 					if (bullet) {
 						//  Make bullet come out of tip of ship with right angle
@@ -634,13 +635,11 @@ body {
 						bullet.reset(player.x + bulletOffset, player.y);
 						//  "Spread" angle of 1st and 3rd bullets
 						var spreadAngle;
-						if (i === 0) spreadAngle = -40;
-						if (i === 1) spreadAngle = -30;
-						if (i === 2) spreadAngle = -5;
-						if (i === 3) spreadAngle = 0;
-						if (i === 4) spreadAngle = 5;
-						if (i === 5) spreadAngle = 30;
-						if (i === 6) spreadAngle = 40;
+						if (i === 0) spreadAngle = -15;
+						if (i === 1) spreadAngle = -5;
+						if (i === 2) spreadAngle = 0;
+						if (i === 3) spreadAngle = 5;
+						if (i === 4) spreadAngle = 15;
 						bullet.angle = player.angle + spreadAngle;
 						game.physics.arcade.velocityFromAngle(spreadAngle , BULLET_SPEED, bullet.body.velocity);
 						//bullet.body.velocity.x += player.body.velocity.x;
@@ -652,27 +651,48 @@ body {
 						audio.volume=0.2		
 				}
 				break;
-			case 4:
-				//  To avoid them being allowed to fire too fast we set a time limit
-				if (game.time.now > bulletTimer){
-					var BULLET_SPEED = 4000;
-					var BULLET_SPACING = 0;
-					//  Grab the first bullet we can from the pool
-					var bullet = bullets.getFirstExists(false);
-					if (bullet)
-					{
-						//  And fire it
-						//  Make bullet come out of tip of ship with right angle
-						var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
-						bullet.reset(player.x + bulletOffset, player.y);
-						bullet.angle = player.angle;
-						game.physics.arcade.velocityFromAngle(bullet.angle, BULLET_SPEED, bullet.body.velocity);
-						bullet.body.velocity.y += player.body.velocity.y;
+				case 4:
+				if (game.time.now > bulletTimer) {
+					var BULLET_SPEED = 400;
+					var BULLET_SPACING = 500;
+					for (var i = 0; i < 5; i++) {
+						var bullet = bullets.getFirstExists(false);
+						if (bullet) {
+							//  Make bullet come out of tip of ship with right angle
+							var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
+							bullet.reset(player.x + bulletOffset, player.y);
+							//  "Spread" angle of 1st and 3rd bullets
+							var spreadAngle;
+							var blt_speed;
+							if (i === 0){
+									blt_speed = BULLET_SPEED
+									spreadAngle = -15;
+								}
+								if (i === 1){
+									blt_speed = 1000
+									spreadAngle = -5;
+								}
+								if (i === 2){
+									blt_speed = 1000
+									spreadAngle = 0;
+								}
+								if (i === 3){
+									blt_speed = 1000
+									spreadAngle = 5;
+								}
+								if (i === 4){
+									blt_speed = BULLET_SPEED
+									spreadAngle = 15;
+								}
+							bullet.angle = player.angle + spreadAngle;
+							game.physics.arcade.velocityFromAngle(spreadAngle , blt_speed, bullet.body.velocity);
+							//bullet.body.velocity.x += player.body.velocity.x;
+						}
 						bulletTimer = game.time.now + BULLET_SPACING;
-						var audio = new Audio('assets/shoot.wav');
-						audio.play()
-						audio.volume=0.2
 					}
+							var audio = new Audio('assets/shoot.wav');
+							audio.play()
+							audio.volume=0.2		
 				}
 				break;
 			}
