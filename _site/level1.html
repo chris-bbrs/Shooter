@@ -301,7 +301,7 @@ body {
 			upgrade = game.add.group();
 			upgrade.enableBody = true;
 			upgrade.physicsBodyType = Phaser.Physics.ARCADE;
-			upgrade.createMultiple(8,'upgrade');
+			upgrade.createMultiple(6,'upgrade');
 
 			//Upgrade Icon 2
 			upgrade2 = game.add.group();
@@ -313,7 +313,7 @@ body {
 			upgrade3 = game.add.group();
 			upgrade3.enableBody = true;
 			upgrade3.physicsBodyType = Phaser.Physics.ARCADE;
-			upgrade3.createMultiple(2,'upgrade3');
+			upgrade3.createMultiple(4,'upgrade3');
 
 			//  Game over text
 		    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'font', 'GAME OVER!', 110);
@@ -365,7 +365,6 @@ body {
 		        scoreText.text = 'Score: ' + score;
 		    };
 		    scoreText.render();
-			
 
 		}
 
@@ -422,6 +421,7 @@ body {
 
 			game.physics.arcade.overlap(player, blueEnemies, shipCollide, null, this);
 			game.physics.arcade.overlap(blueEnemies, bullets , hitEnemy, null, this);
+			game.physics.arcade.overlap(blueEnemyBullets, player, enemyHitsPlayer, null, this);
 
 			game.physics.arcade.overlap(boss, bullets, hitEnemy, bossHitTest, this);
 			game.physics.arcade.overlap(player, boss, shipCollide, null, this);
@@ -430,8 +430,6 @@ body {
 			game.physics.arcade.overlap(player, upgrade, playerhitsupgrade, null, this);
 			game.physics.arcade.overlap(player, upgrade2, playerhitsupgrade2, null, this);
 			game.physics.arcade.overlap(player, upgrade3, playerhitsupgrade3, null, this);
-
-			game.physics.arcade.overlap(blueEnemyBullets, player, enemyHitsPlayer, null, this);
 
 			 //  Game over?
 			 if (! player.alive && gameOver.visible === false) {
@@ -476,16 +474,16 @@ body {
 				audio.volume = 0.1
 		
 			// Increase score
-			score += enemy.damageAmount * 10;
+			score += enemy.damageAmount * 5;
 			scoreText.render();	
 
-			if (score >= 1500 && player.weaponLevel == 1) {
+			if (score >= 1000 && player.weaponLevel == 1 && score%300 == 0) {
              	launchUpgrade()
 			}
-			if (score >= 6000 && player.weaponLevel == 2){
+			if (score >= 4000 && player.weaponLevel == 2 && score%500 == 0){
 				launchUpgrade2()
 			}
-			if (score >= 15000 && player.weaponLevel == 3){
+			if (score >= 9000 && player.weaponLevel == 3 && score%1000 == 0){
 				launchUpgrade3()
 			}
 				
@@ -493,8 +491,8 @@ body {
 			//  Enemies come quicker as score increases
 			greenEnemySpacing *= 0.9;
 
-			// //  Blue enemies come in after a score of 1000
-			if (!blueEnemyLaunched && score > 1000) {
+			// //  Blue enemies come in after a score of 500
+			if (!blueEnemyLaunched && score >= 500) {
 			blueEnemyLaunched = true;
 			launchBlueEnemy();
 
@@ -503,7 +501,7 @@ body {
 			}
 
 			//  Launch boss
-			if (!bossLaunched && score >= 15000) {
+			if (!bossLaunched && score >= 13000) {
 				greenEnemySpacing = 5000;
 				blueEnemySpacing = 12000;
 				//  dramatic pause before boss
@@ -577,7 +575,7 @@ body {
 					//  To avoid them being allowed to fire too fast we set a time limit
 					if (game.time.now > bulletTimer){
 						var BULLET_SPEED = 400;
-						var BULLET_SPACING = 500;
+						var BULLET_SPACING = 400;
 						//  Grab the first bullet we can from the pool
 						var bullet = bullets.getFirstExists(false);
 						if (bullet)
@@ -606,12 +604,12 @@ body {
 							//  Make bullet come out of tip of ship with right angle
 							var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
 							bullet.reset(player.x + bulletOffset, player.y);
-							//  "Spread" angle of 1st and 3rd bullets
+							
 							var spreadAngle;
 							var blt_speed;
-							if (i === 0) spreadAngle = -5;
+							if (i === 0) spreadAngle = -2;
 							if (i === 1) spreadAngle = 0;
-							if (i === 2) spreadAngle = 5;
+							if (i === 2) spreadAngle = 2;
 							bullet.angle = player.angle + spreadAngle;
 							game.physics.arcade.velocityFromAngle(spreadAngle , BULLET_SPEED, bullet.body.velocity);
 							//bullet.body.velocity.x += player.body.velocity.x;
@@ -627,19 +625,25 @@ body {
 				if (game.time.now > bulletTimer) {
 				var BULLET_SPEED = 400;
 				var BULLET_SPACING = 500;
-				for (var i = 0; i < 5; i++) {
+				for (var i = 0; i < 3; i++) {
 					var bullet = bullets.getFirstExists(false);
 					if (bullet) {
 						//  Make bullet come out of tip of ship with right angle
 						var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
 						bullet.reset(player.x + bulletOffset, player.y);
-						//  "Spread" angle of 1st and 3rd bullets
 						var spreadAngle;
-						if (i === 0) spreadAngle = -15;
-						if (i === 1) spreadAngle = -5;
-						if (i === 2) spreadAngle = 0;
-						if (i === 3) spreadAngle = 5;
-						if (i === 4) spreadAngle = 15;
+						if (i === 0){
+								blt_speed = BULLET_SPEED
+								spreadAngle = -10;
+							}
+							if (i === 1){
+								blt_speed = BULLET_SPEED + 100
+								spreadAngle = 0;
+							}
+							if (i === 2){
+								blt_speed = BULLET_SPEED
+								spreadAngle = 10;
+							}
 						bullet.angle = player.angle + spreadAngle;
 						game.physics.arcade.velocityFromAngle(spreadAngle , BULLET_SPEED, bullet.body.velocity);
 						//bullet.body.velocity.x += player.body.velocity.x;
@@ -654,36 +658,36 @@ body {
 				case 4:
 				if (game.time.now > bulletTimer) {
 					var BULLET_SPEED = 400;
-					var BULLET_SPACING = 500;
+					var BULLET_SPACING = 600;
 					for (var i = 0; i < 5; i++) {
 						var bullet = bullets.getFirstExists(false);
 						if (bullet) {
 							//  Make bullet come out of tip of ship with right angle
 							var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
 							bullet.reset(player.x + bulletOffset, player.y);
-							//  "Spread" angle of 1st and 3rd bullets
+							
 							var spreadAngle;
 							var blt_speed;
 							if (i === 0){
-									blt_speed = BULLET_SPEED
-									spreadAngle = -15;
-								}
-								if (i === 1){
-									blt_speed = 1000
-									spreadAngle = -5;
-								}
-								if (i === 2){
-									blt_speed = 1000
-									spreadAngle = 0;
-								}
-								if (i === 3){
-									blt_speed = 1000
-									spreadAngle = 5;
-								}
-								if (i === 4){
-									blt_speed = BULLET_SPEED
-									spreadAngle = 15;
-								}
+								blt_speed = BULLET_SPEED
+								spreadAngle = -30;
+							}
+							if (i === 1){
+								blt_speed = BULLET_SPEED + 100
+								spreadAngle = -10;
+							}
+							if (i === 2){
+								blt_speed = BULLET_SPEED + 200
+								spreadAngle = 0;
+							}
+							if (i === 3){
+								blt_speed = BULLET_SPEED + 100
+								spreadAngle = 10;
+							}
+							if (i === 4){
+								blt_speed = BULLET_SPEED
+								spreadAngle = 30;
+							}
 							bullet.angle = player.angle + spreadAngle;
 							game.physics.arcade.velocityFromAngle(spreadAngle , blt_speed, bullet.body.velocity);
 							//bullet.body.velocity.x += player.body.velocity.x;
@@ -794,7 +798,7 @@ body {
 		function launchBoss() {
 			boss.reset(800,game.rnd.integerInRange(game.width, 300));
 			booster.start(false, 1000, 10);
-			boss.health = 1000;
+			boss.health = 5000;
 			bossBulletTimer = game.time.now + 5000;
 		}
 
@@ -865,7 +869,10 @@ body {
 			game.time.events.remove(upgrade3);
 
 			boss.kill();
+			bossBullet.callAll('kill');
+			// game.time.events.remove(boss);
 			booster.kill();
+			// game.time.events.remove(booster);
 
 			//  Revive the player
 			player.revive();
