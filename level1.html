@@ -228,7 +228,7 @@ body {
 					//  give some bonus health
 					player.health = Math.min(100, player.health + 40);
 					shields.render();
-					// nextLVL();
+					nextLVL();
 				}
 			};
 
@@ -482,7 +482,7 @@ body {
 			if (score >= 4000 && player.weaponLevel == 2 && score%500 == 0){
 				launchUpgrade2()
 			}
-			if (score >= 9000 && player.weaponLevel == 3 && score%1000 == 0){
+			if (score >= 8000 && player.weaponLevel == 3 && score%1000 == 0){
 				launchUpgrade3()
 			}
 				
@@ -500,7 +500,7 @@ body {
 			}
 
 			//  Launch boss
-			if (!bossLaunched && score >= 13000) {
+			if (!bossLaunched && score >= 10000) {
 				greenEnemySpacing = 5000;
 				blueEnemySpacing = 12000;
 				//  dramatic pause before boss
@@ -823,6 +823,14 @@ body {
 			if (player.weaponLevel < 4) {
 			player.weaponLevel = 4;
 			}
+		}
+
+		function nextLVL(){
+			game.time.events.add(1000,startLVL2)
+		}
+
+		function startLVL2(){
+			location.href = "./level2.html"
 		}
 
 		function addEnemyEmitterTrail(enemy) {
