@@ -491,7 +491,7 @@ body {
 			greenEnemySpacing *= 0.9;
 
 			// //  Blue enemies come in after a score of 500
-			if (!blueEnemyLaunched && score > 500) {
+			if (!blueEnemyLaunched && score >= 500) {
 			blueEnemyLaunched = true;
 			launchBlueEnemy();
 
@@ -574,7 +574,7 @@ body {
 					//  To avoid them being allowed to fire too fast we set a time limit
 					if (game.time.now > bulletTimer){
 						var BULLET_SPEED = 400;
-						var BULLET_SPACING = 400;
+						var BULLET_SPACING = 600;
 						//  Grab the first bullet we can from the pool
 						var bullet = bullets.getFirstExists(false);
 						if (bullet)
@@ -596,7 +596,7 @@ body {
 				case 2:
 					if (game.time.now > bulletTimer) {
 					var BULLET_SPEED = 400;
-					var BULLET_SPACING = 500;
+					var BULLET_SPACING = 600;
 					for (var i = 0; i < 3; i++) {
 						var bullet = bullets.getFirstExists(false);
 						if (bullet) {
@@ -623,7 +623,7 @@ body {
 				case 3:
 				if (game.time.now > bulletTimer) {
 				var BULLET_SPEED = 400;
-				var BULLET_SPACING = 600;
+				var BULLET_SPACING = 700;
 				for (var i = 0; i < 3; i++) {
 					var bullet = bullets.getFirstExists(false);
 					if (bullet) {
@@ -658,7 +658,7 @@ body {
 				case 4:
 				if (game.time.now > bulletTimer) {
 					var BULLET_SPEED = 400;
-					var BULLET_SPACING = 700;
+					var BULLET_SPACING = 800;
 					for (var i = 0; i < 5; i++) {
 						var bullet = bullets.getFirstExists(false);
 						if (bullet) {
