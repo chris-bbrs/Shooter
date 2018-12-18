@@ -79,8 +79,7 @@ body {
 		function create() {
 
 			music = game.add.audio('music');
-			music.play();
-			music.volume = 1;
+			music.loopFull(1)
 			
 			game.scale.pageAlignHorizontally = true;
 			
@@ -492,7 +491,7 @@ body {
 			greenEnemySpacing *= 0.9;
 
 			// //  Blue enemies come in after a score of 500
-			if (!blueEnemyLaunched && score >= 500) {
+			if (!blueEnemyLaunched && score > 500) {
 			blueEnemyLaunched = true;
 			launchBlueEnemy();
 
@@ -590,7 +589,7 @@ body {
 							bulletTimer = game.time.now + BULLET_SPACING;
 							var audio = new Audio('assets/shoot.wav');
 							audio.play()
-							audio.volume=0.2
+							audio.volume=0.1
 						}
 					}
 					break;
@@ -618,13 +617,13 @@ body {
 					}
 							var audio = new Audio('assets/shoot.wav');
 							audio.play()
-							audio.volume=0.2		
+							audio.volume=0.1		
 					}
 					break;
 				case 3:
 				if (game.time.now > bulletTimer) {
 				var BULLET_SPEED = 400;
-				var BULLET_SPACING = 500;
+				var BULLET_SPACING = 600;
 				for (var i = 0; i < 3; i++) {
 					var bullet = bullets.getFirstExists(false);
 					if (bullet) {
@@ -632,6 +631,7 @@ body {
 						var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
 						bullet.reset(player.x + bulletOffset, player.y);
 						var spreadAngle;
+						var blt_speed;
 						if (i === 0){
 								blt_speed = BULLET_SPEED
 								spreadAngle = -10;
@@ -645,20 +645,20 @@ body {
 								spreadAngle = 10;
 							}
 						bullet.angle = player.angle + spreadAngle;
-						game.physics.arcade.velocityFromAngle(spreadAngle , BULLET_SPEED, bullet.body.velocity);
+						game.physics.arcade.velocityFromAngle(spreadAngle , blt_speed, bullet.body.velocity);
 						//bullet.body.velocity.x += player.body.velocity.x;
 					}
 					bulletTimer = game.time.now + BULLET_SPACING;
 				}
 						var audio = new Audio('assets/shoot.wav');
 						audio.play()
-						audio.volume=0.2		
+						audio.volume=0.1		
 				}
 				break;
 				case 4:
 				if (game.time.now > bulletTimer) {
 					var BULLET_SPEED = 400;
-					var BULLET_SPACING = 600;
+					var BULLET_SPACING = 700;
 					for (var i = 0; i < 5; i++) {
 						var bullet = bullets.getFirstExists(false);
 						if (bullet) {
@@ -696,7 +696,7 @@ body {
 					}
 							var audio = new Audio('assets/shoot.wav');
 							audio.play()
-							audio.volume=0.2		
+							audio.volume=0.1		
 				}
 				break;
 			}
