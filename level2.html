@@ -797,7 +797,10 @@ body {
 		function playerhitsupgrade (player, upgrade){
 			upgrade.kill()
 			if (player.weaponLevel < 2) {
-			player.weaponLevel = 2;
+				var audio = new Audio('assets/Power_Up.wav');
+				audio.play()
+				audio.volume=1
+				player.weaponLevel = 2;
 			}
 			//game.add.audio('healthAudio',0.5).play();
 			//console.log("GOT healthUp")
@@ -806,14 +809,20 @@ body {
 		function playerhitsupgrade2 (player, upgrade2){
 			upgrade2.kill()
 			if (player.weaponLevel < 3) {
-			player.weaponLevel = 3;
+				var audio = new Audio('assets/Power_Up.wav');
+				audio.play()
+				audio.volume=1
+				player.weaponLevel = 3;
 			}
 		}
 		
 		function playerhitsupgrade3 (player, upgrade3){
 			upgrade3.kill()
 			if (player.weaponLevel < 4) {
-			player.weaponLevel = 4;
+				var audio = new Audio('assets/Power_Up.wav');
+				audio.play()
+				audio.volume=1
+				player.weaponLevel = 4;
 			}
 		}
 
